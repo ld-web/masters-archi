@@ -1,40 +1,25 @@
 <?php
 
-// Définitions de constantes
-const EMAIL_PARAM_NAME = 'email';
-const SPAM_DOMAINS = ['spamming.com', 'mailinator.com', 'oneminutemail.com'];
+require_once 'constants.php';
+require_once 'functions.php';
 
-// Vérification présence du paramètre dans tableau $_GET
-if (empty($_GET) || empty($_GET[EMAIL_PARAM_NAME])) {
-  // Affichage erreur et quitte
-  echo "Please provide a valid email address";
-  exit;
+if (!hasGetParam(EMAIL_PARAM_NAME)) {
+  error("Please provide a valid email address");
 }
 
-// Affectation
 $email = $_GET['email'];
 
-// Vérification de la validité du format de l'email
-if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-  // Affichage erreur et quitte
-  echo "Invalid email address";
-  exit;
+if (!isEmailValid($email)) {
+  error("Invalid email address");
 }
 
-// Extraction du domaine de l'email, si possible
-$emailParts = explode('@', $email);
-if ($emailParts === false || count($emailParts) !== 2) {
-  // Affichage erreur et quitte
-  echo "Unable to extract domain from email address";
-  exit;
+$domain = getDomainFromEmail($email);
+if ($domain === null) {
+  error("Unable to extract domain from email address");
 }
-$domain = $emailParts[1];
 
-// Vérification que l'email n'est pas un spam
-if (in_array($domain, SPAM_DOMAINS)) {
-  // Affichage erreur et quitte
-  echo "Email is spam";
-  exit;
+if (isSpam($domain, SPAM_DOMAINS)) {
+  error("Email is spam");
 }
 
 echo "Email is valid";
