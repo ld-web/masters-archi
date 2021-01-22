@@ -1,32 +1,25 @@
 <?php
 
-const EMAIL_PARAM_NAME = 'email';
-const SPAM_DOMAINS = ['spamming.com', 'mailinator.com', 'oneminutemail.com'];
+require_once 'vendor/autoload.php';
 
-if (empty($_GET) || empty($_GET[EMAIL_PARAM_NAME])) {
-  echo "Please provide a valid email address";
-  exit;
+use App\Email;
+use App\HtmlPrinter;
+use App\Request;
+use App\SpamCheckerProvider;
+
+$request = new Request();
+
+try {
+  $emailQueryString = $request->getParam('email');
+  $email = new Email($emailQueryString);
+} catch (InvalidArgumentException $e) {
+  HtmlPrinter::printAndExit($e->getMessage());
 }
 
-$email = $_GET['email'];
+$spamChecker = SpamCheckerProvider::getSpamCheckerInstance();
 
-if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-  echo "Invalid email address";
-  exit;
-}
-
-$emailParts = explode('@', $email);
-
-if ($emailParts === false || count($emailParts) !== 2) {
-  echo "Unable to extract domain from email address";
-  exit;
-}
-
-$domain = $emailParts[1];
-
-if (in_array($domain, SPAM_DOMAINS)) {
-  echo "Email is spam";
-  exit;
+if ($spamChecker->isSpam($email)) {
+  HtmlPrinter::printAndExit('Email is spam');
 }
 
 echo "Email is valid";

@@ -1,0 +1,29 @@
+@startuml Email system
+class Email {
+  -email: string
+  +__construct(email: string)
+  +getDomain(): string
+  +isFormatValid(email: string): bool
+}
+
+class Request {
+  +getParam(index: string)
+  -hasGetParam(index: string): bool
+}
+
+interface ISpamChecker {
+  +isSpam(email: Email): bool
+}
+
+class ArraySpamChecker {
+  +isSpam(email: Email): bool
+}
+
+class SpamCheckerProvider {
+  +static getSpamCheckerInstance(): ISpamChecker
+}
+
+Email -- ISpamChecker
+ISpamChecker <|.. ArraySpamChecker
+ISpamChecker -- SpamCheckerProvider
+@enduml
